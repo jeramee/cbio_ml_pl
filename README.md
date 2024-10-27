@@ -4,6 +4,49 @@ cbio machine learning pipeline
 
 `cbio_ml_pl` is a machine learning pipeline framework designed for seamless integration with cBioPortal data. This interface module enables cancer genomics data to be fetched, processed, and prepared for machine learning applications as part of a larger Informatics Controller system. The `cbio_ml_pl` interface is modular, allowing it to integrate easily into broader pipelines while handling cBioPortal-specific data processing.
 
+## Pipeline Overview
+
+### MongoDB Collections
+
+The pipeline currently supports the following collections in MongoDB:
+
+- **clinical_data**: Patient-level data with clinical details.
+- **mutations**: Genomic mutations relevant to cancer studies.
+- **studies**: Metadata about each cancer study available in cBioPortal.
+
+Data is parsed from cBioPortal using socket connections and dumped directly into these MongoDB collections.
+
+### Data Flow
+
+1. **Data Retrieval**: Data is retrieved from cBioPortal using sockets.
+2. **Data Parsing**: Retrieved data is parsed into structured formats.
+3. **MongoDB Storage**: Parsed data is stored in MongoDB collections.
+4. **ML Pipeline Preparation**: Data is processed, normalized, and standardized for machine learning.
+
+![Pipeline Overview](images/pipeline_overview.png)
+
+## Collection Descriptions and Examples
+
+Below are examples of the data for each collection currently in use.
+
+### Clinical Data
+
+The **clinical_data** collection includes detailed clinical information about patients, including demographics, disease status, and treatments.
+
+![Clinical Data Example](images/clinical_data_example.png)
+
+### Mutations
+
+The **mutations** collection holds information on gene mutations relevant to cancer genomics. This data helps in identifying mutation patterns across different patient cohorts.
+
+![Mutations Data Example](images/mutations_example.png)
+
+### Studies
+
+The **studies** collection contains metadata for each cancer study available in cBioPortal. This includes study identifiers, titles, descriptions, and relevant publications.
+
+![Studies Data Example](images/studies_example.png)
+
 ## Features
 
 - **Modular cBioPortal Interface**: Simplified classes to fetch data from cBioPortal (e.g., clinical data, mutations, cancer types, gene panels, case lists).
@@ -18,6 +61,33 @@ Clone the repository:
 ```bash
 git clone https://github.com/jeramee/cbio_ml_pl.git
 cd cbio_ml_pl
+```
+
+### Create an `environment.yml` file in the project root directory:
+
+```yaml
+name: cbio_ml_pl_env
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pandas
+  - requests
+  - scikit-learn
+  - pytest
+  # Add other dependencies as needed
+```
+
+### Install the environment with Conda:
+
+```bash
+conda env create -f environment.yml
+```
+
+### Activate the environment:
+
+```bash
+conda activate cbio_ml_pl_env
 ```
 
 # Usage
@@ -86,47 +156,87 @@ cbio_ml_pl/
 └── README.md                         # Project documentation
 ```
 
-Setting up with Conda
+Code for example_usage.py
 
-For ease of environment setup and dependency management, you can use Conda to create an isolated environment for cbio_ml_pl.
+```python
 
-### Create a new Conda environment:
+# examples/example_usage.py
 
-```bash
+from cbioportal_interface.cbioportal import CbioportalDF
+from cbioportal_interface.informatics_controller import InformaticsController
+from ml_preprocessing.preprocess import PreprocessML
 
-conda create -n cbio_ml_pl_env python=3.8
+# Setup server URL and initialize the interface
+server_url = "https://your_cbioportal_server/api"
+cbioportal_df = CbioportalDF(serverURL=server_url)
+informatics_controller = InformaticsController(cbioportal_df)
+
+# Process data
+informatics_controller.process_data()
+data_for_ml = informatics_controller.get_processed_data()
+
+
+# Preprocess clinical data for ML
+preprocessor = PreprocessML(data_for_ml['clinical_data'])
+normalized_data = preprocessor.normalize_data(columns=['age', 'weight', 'height'])
+
+# Export processed data to file
+from cbioportal_interface.cbioportal_socket import CbioPortalSocket
+cbio_socket = CbioPortalSocket(server_url)
+cbio_socket.export_for_ml("clinical_data_for_ml.csv")
 ```
 
-### Activate the environment:
+### Suggested Libraries to Install via Conda
+
+For this setup, the following libraries are recommended:
 
 ```bash
 
-conda activate cbio_ml_pl_env
+conda install pandas requests scikit-learn pytest
 ```
 
-### Install dependencies:
+### Explanation
 
-If you have a requirements.txt file, use:
+    pandas: For data handling.
+    requests: To handle API requests to cBioPortal.
+    scikit-learn: To perform ML preprocessing like normalization.
+    pytest: To support testing and ensure that components work as expected.
+
+### Additional Recommendations
+
+If you plan to use a YAML configuration or data validation, consider these additional libraries:
 
 ```bash
 
-pip install -r requirements.txt
+conda install pyyaml pydantic
 ```
 
-### Alternatively, if you also have a conda_requirements.yml file, you can install using:
+Setting Up the cBioPortal Interface
 
-```bash
+```python
 
-conda env update --file conda_requirements.yml --name cbio_ml_pl_env
+from cbioportal_interface.cbioportal import CbioportalDF
+from cbioportal_interface.informatics_controller import InformaticsController
+
+server_url = "https://your_cbioportal_server/api"
+cbioportal_df = CbioportalDF(serverURL=server_url)
+informatics_controller = InformaticsController(cbioportal_df)
+informatics_controller.process_data()
+data_for_ml = informatics_controller.get_processed_data()
 ```
 
-### Verify Installation:
+### Exporting Data to MongoDB
 
-After installation, run the tests to ensure everything is set up correctly:
+Data can be exported directly into MongoDB collections for the ML pipeline.
 
-```bash
+```python
 
-    pytest tests/
+from cbioportal_interface.cbioportal_socket import CbioPortalSocket
+
+cbio_socket = CbioPortalSocket(server_url)
+cbio_socket.export_to_mongo(collection="clinical_data", data=data_for_ml['clinical_data'])
+cbio_socket.export_to_mongo(collection="mutations", data=data_for_ml['mutations'])
+cbio_socket.export_to_mongo(collection="studies", data=data_for_ml['studies'])
 ```
 
 ### License

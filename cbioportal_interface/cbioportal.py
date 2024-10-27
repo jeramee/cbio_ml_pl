@@ -24,7 +24,8 @@ class CbioportalDF(CbioportalObj):
             return pd.DataFrame()
 
     def get_clinical_data(self):
-        self.outputDF = self.fetch_data("clinical_data")
+        self.outputDF = self.fetch_data("clinical-data")
+        return self.outputDF  # Ensure data is returned for controller
 
     def get_mutations_data(self):
         self.outputDF = self.fetch_data("mutations")

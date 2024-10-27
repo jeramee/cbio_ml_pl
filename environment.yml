@@ -1,0 +1,11 @@
+name: cbio_ml_pl_env
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pandas
+  - requests
+  - scikit-learn
+  - pytest
+  - pyyaml      # For YAML configuration management
+  - pydantic    # For data validation

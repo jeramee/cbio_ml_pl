@@ -1,3 +1,5 @@
+# informatics_controller.py
+
 class InformaticsController:
     def __init__(self, cbioportal_df):
         self.cbioportal_df = cbioportal_df
