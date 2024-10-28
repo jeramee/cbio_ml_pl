@@ -175,7 +175,6 @@ informatics_controller = InformaticsController(cbioportal_df)
 informatics_controller.process_data()
 data_for_ml = informatics_controller.get_processed_data()
 
-
 # Preprocess clinical data for ML
 preprocessor = PreprocessML(data_for_ml['clinical_data'])
 normalized_data = preprocessor.normalize_data(columns=['age', 'weight', 'height'])
@@ -190,9 +189,40 @@ cbio_socket.export_for_ml("clinical_data_for_ml.csv")
 
 For this setup, the following libraries are recommended:
 
+1. Create a New Conda Environment with Python 3.8
+
+To directly create a Conda environment with Python 3.8:
+
+```bash
+conda create -n my_env_name python=3.8
+```
+
+Replace my_env_name with your preferred environment name.
+1. Activate the New Environment
+
+Activate the environment you created:
+
 ```bash
 
-conda install pandas requests scikit-learn pytest
+conda activate my_env_name
+```
+
+3. Install Libraries in the Python 3.8 Environment
+
+With the environment active, install the necessary libraries:
+
+```bash
+
+conda install pandas requests scikit-learn pytest biopython openpyxl numpy matplotlib seaborn sqlalchemy rdkit cryptography freetype
+```
+
+4. Verify the Python Version
+
+To confirm that Python 3.8 is correctly set up, check the version:
+
+```bash
+
+python --version 
 ```
 
 ### Explanation
